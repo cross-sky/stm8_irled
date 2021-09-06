@@ -78,10 +78,6 @@ LogEnabled=0
 GraphEnabled=0
 ShowTimeLog=1
 ShowTimeSum=1
-[Breakpoints]
-Bp0=_ "STD_DATA" "CLK_HSIPrescalerConfig" 1 0 0 3 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\USER\ir_adc.c}.495.13" 1 0 0 0 "" 0 ""
-Count=2
 [Log file]
 LoggingEnabled=_ 0
 LogFile=_ ""
@@ -89,6 +85,10 @@ Category=_ 0
 [TermIOLog]
 LoggingEnabled=_ 0
 LogFile=_ ""
+[Breakpoints]
+Bp0=_ "STD_DATA" "CLK_HSIPrescalerConfig" 1 0 0 3 0 "" 0 ""
+Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\USER\ir_adc.c}.495.13" 1 0 0 0 "" 0 ""
+Count=2
 [Aliases]
 A0=_ "D:\doc\stm8\stm8-irled\FWlib\src\stm8s_adc1.c" "F:\XT-DOC\Vscode\sm8-irled08\FWlib\src\stm8s_adc1.c"
 A1=_ "F:\STM32\STM8\STM8S¿ª·¢Àý³Ì\LED\FWlib\src\stm8s_clk.c" ""
