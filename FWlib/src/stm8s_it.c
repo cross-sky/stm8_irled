@@ -23,6 +23,7 @@
 #include "stm8s.h"
 #include "stm8s_it.h"
 #include "ticktim4.h"
+#include "uart.h"
 
 /** @addtogroup I2C_EEPROM
  * @{
@@ -142,6 +143,7 @@ INTERRUPT_HANDLER(EXTI_PORTD_IRQHandler, 6)
 	/* In order to detect unexpected events during development,
 	 it is recommended to set a breakpoint on the following instruction.
 	 */
+	Get_txbusy_handler();
 }
 
 /**

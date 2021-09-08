@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 10:02:31
- * @LastEditTime: 2021-08-13 23:11:17
+ * @LastEditTime: 2021-09-08 22:47:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\main.c
@@ -46,7 +46,8 @@ int main(void)
 
    Tim4_Init();
    InitAD();
-   Init_UART1();
+   //Init_UART1();
+   UARTx_setEXTI();
    
   while (1)
   {

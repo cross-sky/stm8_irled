@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-06 22:55:28
+ * @LastEditTime: 2021-09-08 22:48:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -25,7 +25,7 @@ uint8_t adc_count=0;                // adc count
 uint8_t t_delaycount = 0;           // next delay adc time
 
 static uint8_t ir_adc_scan200usflag = 0;        // multilate key scan flag
-static uint8_t ir_adc_scan2msflag = 0;          // single key scan flag
+//static uint8_t ir_adc_scan2msflag = 0;          // single key scan flag
 
 static uint8_t key_scan_mode = 0;
 
@@ -348,7 +348,7 @@ void ir_adc_scan_200us_b(uint8_t scanflag, uint8_t numbers)
 void ir_adc_scan_1ms_b(uint8_t scanflag , uint8_t numbers)
 {
     uint16_t  _adc = 0;
-    uint8_t  _adc_diff = 0;
+    //uint8_t  _adc_diff = 0;
     // check release
     if (scanflag)
     {
@@ -503,7 +503,23 @@ void ir_mul_key_scan_b(uint8_t switchflag)
                         key_send = 1;
                         //ir_led_testdisp(current_ir_scan);
                         //ir_led_resettestdisp();
-                        send_data(current_ir_scan);
+
+
+                        // before send check tx_busy_flag
+                        if (Gtx_busy_flag_get() >= 25)
+                        {
+                            // change to sene mode 
+                            Init_UART1();
+                            send_data(current_ir_scan);
+
+                            // after send , change to exti mode
+                            UARTx_setEXTI();
+                        }
+                        else{
+                            IRLED_delay(0);
+                            break;
+                        }
+
                     }
                 }
             }

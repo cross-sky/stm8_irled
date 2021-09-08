@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 11:15:26
- * @LastEditTime: 2021-08-29 10:06:13
+ * @LastEditTime: 2021-09-08 23:41:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\com_io.h
@@ -9,7 +9,7 @@
 #ifndef __COM_IO_H
 #define __COM_IO_H
 
-#include "stm8s_gpio.h"
+#include "stm8s_conf.h"
 
 #ifdef VSEDIT
 #define __interrupt static
@@ -28,6 +28,19 @@
 #define IR_GDEN_PIN   GPIO_PIN_6
 //pd 1 swim
 //#define IR_GDEN_PIN   GPIO_PIN_1
+
+
+// tx set to exti
+#define TX_PORT                    GPIOD 
+#define TX_PIN                     GPIO_PIN_5  
+// #define TX_MODE                    GPIO_MODE_IN_PU_IT  
+#define TX_MODE                    GPIO_MODE_IN_FL_IT  
+  
+  
+#define TX_EXTI_PORT               EXTI_PORT_GPIOD  
+#define TX_EXTI_SENSITIVITYT       EXTI_TLISENSITIVITY_FALL_ONLY  
+
+
 /*
 num1 - ir_en1   --PB5
 num2 - ir_en2   --PB4

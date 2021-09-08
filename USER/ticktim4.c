@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 11:40:46
- * @LastEditTime: 2021-08-13 22:54:57
+ * @LastEditTime: 2021-09-08 22:40:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ticktim4.c
@@ -9,9 +9,10 @@
 #include "ticktim4.h"
 #include "led.h"
 #include "ir_adc.h"
-
+#include "uart.h"
 
 uint8_t g_sys_timer=0;
+uint8_t g_sys_timer1ms=0;
 uint8_t g_sys_timer10ms = 0;
 uint8_t g_sys_timer1s = 0;
 
@@ -52,6 +53,14 @@ void time_task_schedule(void)
     // {
     //     case 
     // }
+
+    // 1 ms cycle
+    if(g_sys_timer1ms == 1)
+    {
+        g_sys_timer1ms = 0;
+        Gtx_busy_flag_add();
+    }
+
     if(g_sys_timer >= 10)
     {   // 10ms
         g_sys_timer = 0;
@@ -89,7 +98,8 @@ void time_task_schedule(void)
 
 void TIM4_IRQHandler(void) 
 {
-  g_sys_timer++;
-  TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
+    g_sys_timer++;
+    g_sys_timer1ms=1;
+    TIM4_ClearITPendingBit(TIM4_IT_UPDATE);
 }
 
