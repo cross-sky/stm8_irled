@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-10 01:08:30
+ * @LastEditTime: 2021-09-10 04:27:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -52,17 +52,17 @@ static uint16_t g_adc_envir_reflec = 0;
 // uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
 //                                         167, 150, 101, 146,
 //                                         123, 152, 163, 136};
-uint8_t ref_adc_table[IR_MAX_POWER] = { 150, 161, 108, 140,
-                                        182, 135, 126, 174,
-                                        128, 152, 158, 138};
+uint8_t ref_adc_table[IR_MAX_POWER] = { 160, 160, 200, 125,
+                                        150, 110, 180, 188,
+                                        107, 162, 180, 160};
                                         
 // uint8_t ref_adc_res_table[IR_MAX_POWER] = { 26, 19, 11, 30,
 //                                         26, 19, 13, 24,
 //                                         32, 25, 18, 11};
 
-uint8_t ref_adc_res_table[IR_MAX_POWER] = { 27, 20, 20, 21,
-                                        18, 27, 10, 13,
-                                        25, 27, 25, 14};
+uint8_t ref_adc_res_table[IR_MAX_POWER] = { 20, 20, 25, 13,
+                                        17, 10, 20, 22,
+                                        11, 16, 20, 18};
 
 void IRLED_delay(uint16_t us);
 
