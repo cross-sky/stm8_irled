@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-11 22:32:28
- * @LastEditTime: 2021-09-08 22:51:50
+ * @LastEditTime: 2021-09-10 00:22:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\uart.h
@@ -20,6 +20,6 @@ uint8_t Gtx_busy_flag_get(void);
 void Gtx_busy_flag_add(void);
 void UARTx_setEXTI(void);
 void Get_txbusy_handler(void);
-
-
+void sends_adc_diff(uint16_t num);
+void send_data_b(uint8_t number, uint16_t diff);
 #endif

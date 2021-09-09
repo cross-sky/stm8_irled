@@ -1,5 +1,5 @@
 [DebugChecksum]
-Checksum=924128834
+Checksum=-238574864
 [DisAssemblyWindow]
 NumStates=_ 1
 State 1=_ 1
@@ -87,8 +87,7 @@ LoggingEnabled=_ 0
 LogFile=_ ""
 [Breakpoints]
 Bp0=_ "STD_DATA" "CLK_HSIPrescalerConfig" 1 0 0 3 0 "" 0 ""
-Bp1=_ "STD_CODE" "{$PROJ_DIR$\..\USER\ir_adc.c}.512.29" 1 0 0 0 "" 0 ""
-Count=2
+Count=1
 [Aliases]
 A0=_ "D:\doc\stm8\stm8-irled\FWlib\src\stm8s_adc1.c" "F:\XT-DOC\Vscode\sm8-irled08\FWlib\src\stm8s_adc1.c"
 A1=_ "F:\STM32\STM8\STM8S¿ª·¢Àý³Ì\LED\FWlib\src\stm8s_clk.c" ""

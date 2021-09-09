@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-11 22:32:23
- * @LastEditTime: 2021-09-09 00:52:58
+ * @LastEditTime: 2021-09-10 00:58:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\uart.c
@@ -32,14 +32,17 @@ void Gtx_busy_flag_add(void)
 
 void Init_UART1(void)
 {
+  GPIO_Init(TX_PORT, TX_PIN, GPIO_MODE_IN_FL_NO_IT);
 	UART1_DeInit();
 	UART1_Init((u32)9600, UART1_WORDLENGTH_8D, UART1_STOPBITS_1, UART1_PARITY_NO, UART1_SYNCMODE_CLOCK_DISABLE, UART1_MODE_TX_ENABLE);
+  disableInterrupts();
 //	UART1_Cmd(ENABLE);
 }
 
 void UARTx_setEXTI(void)
 {
   disableInterrupts(); // disable globe interrupt
+  UART1_DeInit();
   GPIO_Init(TX_PORT, TX_PIN, TX_MODE);  
   
   EXTI_DeInit();  
@@ -53,6 +56,7 @@ void Get_txbusy_handler(void)
   if (GPIO_ReadInputPin(TX_PORT, TX_PIN) != RESET)
   {
       Gtx_busy_flag_set(0);
+      EXTI_DeInit();
      disableInterrupts();
   }
   //GPIO_ReadInputPin(TX_EXTI_PORT, TX_PIN)
@@ -74,3 +78,20 @@ void send_data(uint8_t number)
     Send(0xcc);
 }
 
+void send_data_b(uint8_t number, uint16_t diff)
+{
+    Send(0x0c);
+    Send(sendcode[number]);
+    Send(0x00);
+    Send(0xcc);
+    Send(diff >> 8);
+    Send(diff & 0xff);
+    //Send(0x00);
+    //Send(0x00);
+}
+
+void sends_adc_diff(uint16_t num)
+{
+    Send(num >> 8);
+    Send(num & 0xff);
+}

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-08 22:48:49
+ * @LastEditTime: 2021-09-10 01:08:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -49,10 +49,12 @@ static uint16_t g_adc_envir_reflec = 0;
 //                                         185, 182, 110, 170,
 //                                         147, 155, 191, 191};
 
-uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
-                                        167, 150, 101, 146,
-                                        123, 152, 163, 136};
-
+// uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
+//                                         167, 150, 101, 146,
+//                                         123, 152, 163, 136};
+uint8_t ref_adc_table[IR_MAX_POWER] = { 150, 161, 108, 140,
+                                        182, 135, 126, 174,
+                                        128, 152, 158, 138};
                                         
 // uint8_t ref_adc_res_table[IR_MAX_POWER] = { 26, 19, 11, 30,
 //                                         26, 19, 13, 24,
@@ -443,7 +445,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
     static uint8_t key_send = 0;
     
     //difference between two adc
-    uint16_t _adc_diff = 0;
+    static uint16_t _adc_diff = 0;
 
     ir_timeflag = 0;
 
@@ -510,9 +512,12 @@ void ir_mul_key_scan_b(uint8_t switchflag)
                         {
                             // change to sene mode 
                             Init_UART1();
-                            send_data(current_ir_scan);
-
+                            //IRLED_delay(10);
+                            //send_data(current_ir_scan);
+                            send_data_b(current_ir_scan, _adc_diff);    
+                           //sends_adc_diff(_adc_diff);
                             // after send , change to exti mode
+                            IRLED_delay(500);
                             UARTx_setEXTI();
                         }
                         else{
@@ -550,7 +555,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
             key_send = 0;
             //send data TODO
 
-            IRLED_delay(600);
+            IRLED_delay(100);
 
             // change to sing scan release mode
             ir_procflag = IR_PROC_POWER;

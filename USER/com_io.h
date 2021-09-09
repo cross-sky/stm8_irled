@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 11:15:26
- * @LastEditTime: 2021-09-08 23:41:11
+ * @LastEditTime: 2021-09-09 23:35:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\com_io.h
@@ -33,8 +33,8 @@
 // tx set to exti
 #define TX_PORT                    GPIOD 
 #define TX_PIN                     GPIO_PIN_5  
-// #define TX_MODE                    GPIO_MODE_IN_PU_IT  
-#define TX_MODE                    GPIO_MODE_IN_FL_IT  
+ #define TX_MODE                    GPIO_MODE_IN_PU_IT  
+//#define TX_MODE                    GPIO_MODE_IN_FL_IT  
   
   
 #define TX_EXTI_PORT               EXTI_PORT_GPIOD  
