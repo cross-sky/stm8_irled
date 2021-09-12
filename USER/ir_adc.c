@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-10 04:27:02
+ * @LastEditTime: 2021-09-12 23:48:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -49,12 +49,12 @@ static uint16_t g_adc_envir_reflec = 0;
 //                                         185, 182, 110, 170,
 //                                         147, 155, 191, 191};
 
-// uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
-//                                         167, 150, 101, 146,
-//                                         123, 152, 163, 136};
-uint8_t ref_adc_table[IR_MAX_POWER] = { 160, 160, 200, 125,
-                                        150, 110, 180, 188,
-                                        107, 162, 180, 160};
+uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
+                                        167, 150, 101, 146,
+                                        123, 152, 163, 136};
+// uint8_t ref_adc_table[IR_MAX_POWER] = { 160, 160, 145, 125,
+//                                         150, 170, 180, 188,
+//                                         107, 162, 180, 160};
                                         
 // uint8_t ref_adc_res_table[IR_MAX_POWER] = { 26, 19, 11, 30,
 //                                         26, 19, 13, 24,
@@ -455,7 +455,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
         IRLED_poweron(current_ir_scan);
         IR_EN_OFF;
         //ir_timeflag = 0;
-        IRLED_delay(150);
+        IRLED_delay(40);
 
         ir_adc_scan200usflag = 1;
         // scan envir adc
@@ -470,7 +470,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
         //TIME 300US
         ir_procflag = IR_PROC_ADC_START;
         //ir_timeflag = 0;
-        IRLED_delay(150);
+        IRLED_delay(40);
         break;
 
     case IR_PROC_ADC_START:
@@ -566,10 +566,10 @@ void ir_mul_key_scan_b(uint8_t switchflag)
         }
 
         //current_ir_scan++;
-        if (current_ir_scan++ >= IR_MAX_POWER )
+        if (current_ir_scan++ >= IR_MAX_POWER - 1 )
         {
             current_ir_scan = 0;
-            IRLED_delay(600);
+            IRLED_delay(200);
 
         }
         else 
@@ -634,7 +634,7 @@ void IR_single_key_scan_b(uint8_t switchflag)
     case IR_PROC_ADC_END:
             //ir_timeflag = 0;
             //ir_adc_scan2msflag = 0;
-            if (ir_release_count > 300 )
+            if (ir_release_count > 500 )
             {
                 //exit immediately
                 //key would not be sent in next

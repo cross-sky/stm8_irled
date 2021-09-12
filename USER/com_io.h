@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 11:15:26
- * @LastEditTime: 2021-09-10 01:22:11
+ * @LastEditTime: 2021-09-12 22:15:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\com_io.h
@@ -25,9 +25,9 @@
 #define IR_ADC_CHANNEL  ADC1_CHANNEL_4
 
 // MODEFY TO RXD FOR TEMP   21.8.8
-//#define IR_GDEN_PIN   GPIO_PIN_6
+#define IR_GDEN_PIN   GPIO_PIN_6
 //pd 1 swim
-#define IR_GDEN_PIN   GPIO_PIN_1
+//#define IR_GDEN_PIN   GPIO_PIN_1
 
 
 // tx set to exti
