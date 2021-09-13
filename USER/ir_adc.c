@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-12 23:48:41
+ * @LastEditTime: 2021-09-14 00:59:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -49,20 +49,29 @@ static uint16_t g_adc_envir_reflec = 0;
 //                                         185, 182, 110, 170,
 //                                         147, 155, 191, 191};
 
-uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
-                                        167, 150, 101, 146,
-                                        123, 152, 163, 136};
+// uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 145,
+//                                         167, 150, 101, 146,
+//                                         123, 152, 163, 136};
 // uint8_t ref_adc_table[IR_MAX_POWER] = { 160, 160, 145, 125,
 //                                         150, 170, 180, 188,
 //                                         107, 162, 180, 160};
+
+uint8_t ref_adc_table[IR_MAX_POWER] = { 140, 151, 128, 130,
+                                        145, 130, 145, 146,
+                                        135, 152, 130, 136};
+
                                         
 // uint8_t ref_adc_res_table[IR_MAX_POWER] = { 26, 19, 11, 30,
 //                                         26, 19, 13, 24,
 //                                         32, 25, 18, 11};
 
-uint8_t ref_adc_res_table[IR_MAX_POWER] = { 20, 20, 25, 13,
-                                        17, 10, 20, 22,
-                                        11, 16, 20, 18};
+// uint8_t ref_adc_res_table[IR_MAX_POWER] = { 20, 20, 25, 13,
+//                                         17, 10, 20, 22,
+//                                         11, 16, 20, 18};
+
+uint8_t ref_adc_res_table[IR_MAX_POWER] = { 15, 15, 15, 15,
+                                        15, 15, 15, 15,
+                                        15, 15, 15, 15};
 
 void IRLED_delay(uint16_t us);
 
@@ -76,7 +85,7 @@ void InitAD(void)
     GPIO_Init(GPIOB, GPIO_PIN_4|GPIO_PIN_5, GPIO_MODE_OUT_PP_HIGH_SLOW);
     GPIOB->ODR |= (uint8_t)(GPIO_PIN_4|GPIO_PIN_5);
     GPIO_Init(GPIOC, GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_SLOW);
-    GPIOB->ODR |= (uint8_t)(GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7);
+    GPIOC->ODR |= (uint8_t)(GPIO_PIN_3|GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7);
     GPIO_Init(GPIOD, GPIO_PIN_2|GPIO_PIN_4, GPIO_MODE_OUT_PP_HIGH_SLOW);
     GPIOD->ODR |= (uint8_t)(GPIO_PIN_2|GPIO_PIN_4);
 
@@ -86,18 +95,19 @@ void InitAD(void)
     ADC1_DeInit();
     //通道初始化
     
-    ADC1_Init(ADC1_CONVERSIONMODE_SINGLE,
+    ADC1_Init(ADC1_CONVERSIONMODE_CONTINUOUS,  //ADC1_CONVERSIONMODE_SINGLE,
             (ADC1_Channel_TypeDef)IR_ADC_CHANNEL,
-            ADC1_PRESSEL_FCPU_D18,
+            ADC1_PRESSEL_FCPU_D6,
             ADC1_EXTTRIG_TIM,
             DISABLE,
             ADC1_ALIGN_RIGHT,
             (ADC1_SchmittTrigg_TypeDef)IR_ADC_CHANNEL,
             DISABLE);
-    ADC1_Cmd(ENABLE);//启用ADC1
+    //ADC1_Cmd(ENABLE);//启用ADC1
+    ADC1_StartConversion();
 
 
-    //test ir to low state
+    //init ir en
     GPIO_Init(GPIOD, IR_GDEN_PIN, GPIO_MODE_OUT_PP_HIGH_SLOW);
 }
  
@@ -112,9 +122,9 @@ void AD_Start(void)
  
 uint16_t getADCValue(void)
 {
-//   InitAD(IR_ADC_CHANNEL);  //channel 4
-//   AD_Start();
-    ADC1_StartConversion();//开始转换*/
+
+    //ADC1_StartConversion();//开始转换*/
+    IRLED_delay(1);
     while(ADC1_GetFlagStatus(ADC1_FLAG_EOC) == RESET);
     ADC1_ClearFlag(ADC1_FLAG_EOC);  //软件清除
     return ADC1_GetConversionValue();
@@ -314,11 +324,16 @@ void ir_adc_scan_200us_b(uint8_t scanflag, uint8_t numbers)
     uint8_t _adc_count = 0;
     if (scanflag)
     {
+        //getADCValue();
+
+        ADC1_ClearFlag(ADC1_FLAG_EOC);  //软件清除
+
+
         while(_adc_count < numbers)
         {
-             _adc += getADCValue();
-             IRLED_delay(1);
-             _adc_count++;
+            _adc += getADCValue();
+             //IRLED_delay(1);
+            _adc_count++;
         }
 
         if (numbers == ENV_IR_COUNTS)
@@ -455,7 +470,13 @@ void ir_mul_key_scan_b(uint8_t switchflag)
         IRLED_poweron(current_ir_scan);
         IR_EN_OFF;
         //ir_timeflag = 0;
+
+ //      ADC1_Cmd(ENABLE);
+
+
         IRLED_delay(40);
+
+//        ADC1_StartConversion();//开始转换*/
 
         ir_adc_scan200usflag = 1;
         // scan envir adc
@@ -476,6 +497,11 @@ void ir_mul_key_scan_b(uint8_t switchflag)
     case IR_PROC_ADC_START:
         ir_adc_scan200usflag = 1;
         ir_adc_scan_200us_b(ir_adc_scan200usflag, ENV_PLUS_REFLECT_COUNTS);
+
+
+//        ADC1_Cmd(DISABLE);
+
+        
         IRLED_delay(0);
         ir_procflag = IR_PROC_ADC_END;
         // wait adc check 15 times
@@ -602,7 +628,12 @@ void IR_single_key_scan_b(uint8_t switchflag)
             IRLED_poweron(current_ir_scan);
             IR_EN_OFF;
             //ir_timeflag = 0;
+
+//            ADC1_Cmd(ENABLE);
+
             IRLED_delay(150);
+
+//            ADC1_StartConversion();
 
             ir_adc_scan200usflag = 1;
             // scan envir adc
@@ -628,6 +659,9 @@ void IR_single_key_scan_b(uint8_t switchflag)
             ir_adc_scan_200us_b(ir_adc_scan200usflag, ENV_PLUS_REFLECT_COUNTS);
             IRLED_delay(0);
 
+//            ADC1_Cmd(DISABLE);
+
+            
             ir_procflag = IR_PROC_ADC_END;
             // wait adc check 250 times
             break;
