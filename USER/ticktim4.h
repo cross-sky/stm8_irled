@@ -16,5 +16,7 @@
 void time_task_schedule(void);
 void Tim4_Init(void);
 void TIM4_IRQHandler(void) ;
+uint8_t uvTimeFlag5s_get(void);
+void vvTimeFlag5s_reset(void);
 
 #endif

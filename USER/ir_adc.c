@@ -11,6 +11,7 @@
 #include "led.h"
 #include "uart.h"
 #include "eeprom.h"
+#include "ticktim4.h"
 
 uint8_t ir_timeflag = 0;        // time flag
 uint8_t ir_procflag = 0;        // process flag
@@ -33,6 +34,8 @@ uint8_t adc_send_value = 0;
 
 static uint16_t g_adc_envir = 0;
 static uint16_t g_adc_envir_reflec = 0;
+
+static uint8_t g_adc_debug_send_flag = 0;
 
 #define IR_EN_ON    (GPIOD->ODR &= (uint8_t)(~IR_GDEN_PIN)) 
 #define IR_EN_OFF   (GPIOD->ODR |= (uint8_t)IR_GDEN_PIN)
@@ -541,6 +544,9 @@ void ir_mul_key_scan_b(uint8_t switchflag)
                             //IRLED_delay(10);
                             //send_data(current_ir_scan);
                             send_data_b(current_ir_scan, _adc_diff);    
+                            send_num_to_str(g_adc_envir);
+                            send_num_to_str(g_adc_envir_reflec);
+
                            //sends_adc_diff(_adc_diff);
                             // after send , change to exti mode
                             IRLED_delay(500);
@@ -565,6 +571,23 @@ void ir_mul_key_scan_b(uint8_t switchflag)
             // may be was under the sun, two values are zero and equal
             // do nothing 
         }
+
+        //debug send ir data
+        if (1 == g_adc_debug_send_flag)
+        {
+            Init_UART1();
+            send_data(current_ir_scan);
+            send_num_to_str(g_adc_envir);
+            send_num_to_str(g_adc_envir_reflec);
+            IRLED_delay(500);
+            UARTx_setEXTI();
+
+            if(current_ir_scan >= 11)
+            {
+                g_adc_debug_send_flag = 0;
+            }
+        }
+        
                 
         ir_last_key_setstatus(current_ir_scan, key_valid);
         ir_procflag = IR_PROC_END_DELAY_2MS;
@@ -592,9 +615,24 @@ void ir_mul_key_scan_b(uint8_t switchflag)
         }
 
         //current_ir_scan++;
-        if (current_ir_scan++ >= IR_MAX_POWER - 1 )
+        if (++current_ir_scan >= IR_MAX_POWER )
         {
             current_ir_scan = 0;
+
+            if (1 == uvTimeFlag5s_get())
+            {
+                vvTimeFlag5s_reset();
+                g_adc_debug_send_flag = 1;
+
+                // if (1 == g_adc_debug_send_flag)
+                // {
+                //     g_adc_debug_send_flag = 0;
+                // }
+                // else
+                // {
+                //     g_adc_debug_send_flag = 1;
+                // }
+            }
             IRLED_delay(200);
 
         }

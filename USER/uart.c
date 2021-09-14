@@ -95,3 +95,24 @@ void sends_adc_diff(uint16_t num)
     Send(num >> 8);
     Send(num & 0xff);
 }
+
+void send_num_to_str(uint16_t num)
+{
+  uint8_t i=0;
+  char buf[2] = "";
+  
+  // while (num > 0)
+  // {
+  //   //buf[i++] = (num % 10) + '0';
+  //   buf[i++] = num % 100;
+  //   num = num / 100;
+  // }
+
+  buf[1] = num / 100;
+  buf[0] = num % 100;
+
+  Send(buf[1]);
+  Send(buf[0]);
+  // Send('\r');
+  // Send('\n');
+}

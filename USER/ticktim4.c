@@ -14,7 +14,8 @@
 uint8_t g_sys_timer=0;
 uint8_t g_sys_timer1ms=0;
 uint8_t g_sys_timer10ms = 0;
-uint8_t g_sys_timer1s = 0;
+uint8_t g_sys_timer100ms = 0;
+uint8_t g_sys_timer5s = 0;
 
 void Tim4_Init(void)
 {
@@ -75,15 +76,16 @@ void time_task_schedule(void)
     {   
         // 100ms
         g_sys_timer10ms = 0;
-        g_sys_timer1s++;
+        g_sys_timer100ms++;
         
         //func
 
     }
-    if(g_sys_timer1s >= 10)
+    if(g_sys_timer100ms >= 50)
     {   
         // 1s
-        g_sys_timer1s = 0;
+        g_sys_timer100ms=0;
+        g_sys_timer5s = 1;
 
         //func
         
@@ -95,7 +97,15 @@ void time_task_schedule(void)
     }
 }
 
+uint8_t uvTimeFlag5s_get(void)
+{
+    return g_sys_timer5s;
+}
 
+void vvTimeFlag5s_reset(void)
+{
+    g_sys_timer5s = 0;
+}
 void TIM4_IRQHandler(void) 
 {
     g_sys_timer++;

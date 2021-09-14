@@ -22,4 +22,5 @@ void UARTx_setEXTI(void);
 void Get_txbusy_handler(void);
 void sends_adc_diff(uint16_t num);
 void send_data_b(uint8_t number, uint16_t diff);
+void send_num_to_str(uint16_t num);
 #endif
