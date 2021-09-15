@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-14 00:59:06
+ * @LastEditTime: 2021-09-16 00:03:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -17,6 +17,7 @@ uint8_t ir_timeflag = 0;        // time flag
 uint8_t ir_procflag = 0;        // process flag
 uint8_t all_key_scan_flag = 1;      //init
 uint8_t current_ir_scan = 0;        //  key of current scanning
+uint8_t last_ir_scan = 0;        //  key of last scanning
 
 uint16_t last_key_table = 0;        // last key scan result table
 uint16_t key_long_release = 0;      // key release time big than 1s
@@ -471,30 +472,35 @@ void ir_mul_key_scan_b(uint8_t switchflag)
     {
     case IR_PROC_POWER:
         IRLED_poweron(current_ir_scan);
+        IRLED_poweroff(last_ir_scan);
         IR_EN_OFF;
         //ir_timeflag = 0;
 
  //      ADC1_Cmd(ENABLE);
 
 
-        IRLED_delay(40);
+        IRLED_delay(60);
 
 //        ADC1_StartConversion();//¿ªÊ¼×ª»»*/
 
-        ir_adc_scan200usflag = 1;
-        // scan envir adc
-        ir_adc_scan_200us_b(ir_adc_scan200usflag, ENV_IR_COUNTS);
-        IRLED_delay(0);
+        
+        //IRLED_delay(0);
 
         ir_procflag = IR_PROC_ENON;
         break;
 
     case IR_PROC_ENON:
+
+        ir_adc_scan200usflag = 1;
+        // scan envir adc
+        ir_adc_scan_200us_b(ir_adc_scan200usflag, ENV_IR_COUNTS);
+
+
         IR_EN_ON;
         //TIME 300US
         ir_procflag = IR_PROC_ADC_START;
         //ir_timeflag = 0;
-        IRLED_delay(40);
+        IRLED_delay(50);
         break;
 
     case IR_PROC_ADC_START:
@@ -597,7 +603,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
     case IR_PROC_END_DELAY_2MS:
         //ir_timeflag = 0;
         IR_EN_OFF;
-        IRLED_poweroff(current_ir_scan);
+        //IRLED_poweroff(current_ir_scan);
 
         if (key_send)
         {
@@ -615,6 +621,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
         }
 
         //current_ir_scan++;
+        last_ir_scan = current_ir_scan;
         if (++current_ir_scan >= IR_MAX_POWER )
         {
             current_ir_scan = 0;
@@ -633,7 +640,7 @@ void ir_mul_key_scan_b(uint8_t switchflag)
                 //     g_adc_debug_send_flag = 1;
                 // }
             }
-            IRLED_delay(200);
+            IRLED_delay(50);
 
         }
         else 
@@ -664,6 +671,7 @@ void IR_single_key_scan_b(uint8_t switchflag)
     {
     case IR_PROC_POWER:
             IRLED_poweron(current_ir_scan);
+            IRLED_poweroff(last_ir_scan);
             IR_EN_OFF;
             //ir_timeflag = 0;
 
@@ -764,12 +772,13 @@ void IR_single_key_scan_b(uint8_t switchflag)
     case IR_PROC_END_DELAY_2MS:
             //ir_timeflag = 0;
             IR_EN_OFF;
-            IRLED_poweroff(current_ir_scan);
+            //IRLED_poweroff(current_ir_scan); power off change 
 
             if (key_exit)
             {
                 key_exit = 0;
                 // reset current_ir_key 
+                last_ir_scan = current_ir_scan;
                 current_ir_scan = 0;
                 ir_release_count = 0;
                 IRLED_delay(600);
