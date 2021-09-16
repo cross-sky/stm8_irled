@@ -98,7 +98,7 @@ void sends_adc_diff(uint16_t num)
 
 void send_num_to_str(uint16_t num)
 {
-  uint8_t i=0;
+  //uint8_t i=0;
   char buf[2] = "";
   
   // while (num > 0)

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2021-08-08 17:27:06
- * @LastEditTime: 2021-09-16 00:03:16
+ * @LastEditTime: 2021-09-16 23:16:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \stm8-irled\USER\ir_adc.c
@@ -37,6 +37,12 @@ static uint16_t g_adc_envir = 0;
 static uint16_t g_adc_envir_reflec = 0;
 
 static uint8_t g_adc_debug_send_flag = 0;
+
+//static uint16_t g_key_prevalid_flag = 0;
+
+uint16_t adc_dif1_table[IR_MAX_POWER]={0};
+uint16_t adc_dif2_table[IR_MAX_POWER]={0};
+
 
 #define IR_EN_ON    (GPIOD->ODR &= (uint8_t)(~IR_GDEN_PIN)) 
 #define IR_EN_OFF   (GPIOD->ODR |= (uint8_t)IR_GDEN_PIN)
@@ -203,6 +209,16 @@ void ir_release_key_setstatus(uint8_t keynum, uint8_t value)
     }
 }
 
+void ir_adc_dif_setvalue(uint8_t cur_ir, uint16_t d)
+{
+    adc_dif2_table[cur_ir] = adc_dif1_table[cur_ir];
+    adc_dif1_table[cur_ir] = d;
+}
+
+uint16_t ir_adc_dif_get_d1value(uint8_t cur_ir)
+{
+    return adc_dif1_table[cur_ir];
+}
 
 void IRLED_poweron(uint8_t num)
 {
@@ -450,6 +466,238 @@ uint16_t iradc_get_release_threshold(uint16_t adc_env)
         return 140 + (adc_env - 310) * 0.06;
 }
 
+void ir_mul_key_scan_c(uint8_t switchflag)
+{
+    uint8_t key_valid = 0;
+    static uint8_t key_send = 0;
+    
+    //difference between two adc
+    static uint16_t _adc_diff = 0;
+    uint16_t _adc_d1 = 0;
+
+    ir_timeflag = 0;
+
+    switch (ir_procflag)
+    {
+    case IR_PROC_POWER:
+        IRLED_poweron(current_ir_scan);
+        IRLED_poweroff(last_ir_scan);
+        IR_EN_OFF;
+ //      ADC1_Cmd(ENABLE);
+
+        IRLED_delay(60);
+
+//        ADC1_StartConversion();//¿ªÊ¼×ª»»*/       
+        //IRLED_delay(0);
+
+        ir_procflag = IR_PROC_ENON;
+        break;
+
+    case IR_PROC_ENON:
+
+        ir_adc_scan200usflag = 1;
+        // scan envir adc
+        ir_adc_scan_200us_b(ir_adc_scan200usflag, ENV_IR_COUNTS);
+
+        IR_EN_ON;
+        //TIME 300US
+        ir_procflag = IR_PROC_ADC_START;
+        IRLED_delay(50);
+        break;
+
+    case IR_PROC_ADC_START:
+        ir_adc_scan200usflag = 1;
+        ir_adc_scan_200us_b(ir_adc_scan200usflag, ENV_PLUS_REFLECT_COUNTS);
+
+        IRLED_delay(0);
+        ir_procflag = IR_PROC_ADC_END;
+        // wait adc check 15 times
+        break;
+    case IR_PROC_ADC_END:
+        //ir_adc_scan200usflag = 0;
+
+        // compare value between envir_adc and envir_plus_reflec
+        if (g_adc_envir > g_adc_envir_reflec)
+        {
+            
+             _adc_diff = g_adc_envir - g_adc_envir_reflec;
+             _adc_d1 = ir_adc_dif_get_d1value(current_ir_scan);
+            
+            //key is released
+            if(ir_release_key_getstatus(current_ir_scan) == 0)
+             {
+                 // check d > 50
+                if (_adc_diff > 50)
+                {
+                    // check d1 > 50
+                    if (_adc_d1 > 50)
+                    {
+                        // last key is checked?
+                        if (ir_last_key_getstatus(current_ir_scan))
+                        {
+                            // second check
+                            if (_adc_diff > 1.2 * _adc_d1)
+                            {
+                                key_send = 1;   
+                            }
+                        }
+                        else
+                        {
+                            // first check 
+                            if (_adc_diff > 1.4 * _adc_d1)
+                            {
+                                key_valid = 1;
+                            }
+                        }
+                        
+                    }
+                }
+             }
+             else
+             {
+                 // key is unreleased
+                if (_adc_diff < 0.8 * _adc_d1)
+                {
+                    // release key
+                    ir_release_key_setstatus(current_ir_scan, 0);
+                }
+             }
+
+
+             ir_adc_dif_setvalue(current_ir_scan, _adc_diff);
+        }
+
+
+
+
+        //     // difference is 1.0v means key was pressed
+        //     if (_adc_diff > (ir_adc_get_ref_value(current_ir_scan) - 1))
+        //     {
+        //         key_valid = 1;
+        //         if (ir_last_key_getstatus(current_ir_scan))
+        //         {
+        //             if(ir_release_key_getstatus(current_ir_scan) == 0)
+        //             {
+        //                 key_send = 1;
+
+        //                 // before send check tx_busy_flag
+        //                 if (Gtx_busy_flag_get() >= 25)
+        //                 {
+        //                     // change to sene mode 
+        //                     Init_UART1();
+        //                     send_data_b(current_ir_scan, _adc_diff);    
+        //                     send_num_to_str(g_adc_envir);
+        //                     send_num_to_str(g_adc_envir_reflec);
+
+        //                    //sends_adc_diff(_adc_diff);
+        //                     // after send , change to exti mode
+        //                     IRLED_delay(500);
+        //                     UARTx_setEXTI();
+        //                 }
+        //                 else{
+        //                     IRLED_delay(0);
+        //                     break;
+        //                 }
+
+        //             }
+        //         }
+        //     }
+        //     else
+        //     {
+        //         // release key 
+        //         ir_release_key_setstatus(current_ir_scan, 0);
+        //     }
+        // }
+        // else
+        // {
+        //     // may be was under the sun, two values are zero and equal
+        //     // do nothing 
+        // }
+                
+        
+        ir_last_key_setstatus(current_ir_scan, key_valid);
+        ir_procflag = IR_PROC_END_DELAY_2MS;
+        IRLED_delay(0);
+        //no delay, set flag with mannel
+        //ir_timeflag = 1;
+        break;
+    case IR_PROC_END_DELAY_2MS:
+        IR_EN_OFF;
+
+        if (key_send)
+        {
+            if (Gtx_busy_flag_get() >= 25)
+            {
+                // change to sene mode 
+                Init_UART1();
+                send_data_b(current_ir_scan, _adc_diff);    
+                send_num_to_str(g_adc_envir);
+                send_num_to_str(g_adc_envir_reflec);
+
+                //sends_adc_diff(_adc_diff);
+                // after send , change to exti mode
+                IRLED_delay(500);
+                UARTx_setEXTI();
+
+                key_send = 0;
+                //send data TODO
+                //IRLED_delay(100);
+                // change to sing scan release mode
+                ir_procflag = IR_PROC_POWER;
+                key_scan_mode = 1;
+                break;
+            }
+            else{
+                IRLED_delay(0);
+                break;
+            }
+        }
+
+
+        //debug send ir data
+        if (1 == g_adc_debug_send_flag)
+        {
+            Init_UART1();
+            send_data(current_ir_scan);
+            send_num_to_str(g_adc_envir);
+            send_num_to_str(g_adc_envir_reflec);
+            IRLED_delay(500);
+            UARTx_setEXTI();
+
+            if(current_ir_scan >= 11)
+            {
+                g_adc_debug_send_flag = 0;
+            }
+        }
+
+        //current_ir_scan++;
+        last_ir_scan = current_ir_scan;
+        if (++current_ir_scan >= IR_MAX_POWER )
+        {
+            current_ir_scan = 0;
+
+            if (1 == uvTimeFlag5s_get())
+            {
+                vvTimeFlag5s_reset();
+                g_adc_debug_send_flag = 1;
+
+            }
+            IRLED_delay(50);
+
+        }
+        else 
+        {
+            IRLED_delay(0);
+        }
+                    
+        ir_procflag = IR_PROC_POWER;
+        break;
+    default:
+        break;
+    }
+}
+
+
 /**
  * @description: 
  * each channel scan twice.
@@ -631,14 +879,6 @@ void ir_mul_key_scan_b(uint8_t switchflag)
                 vvTimeFlag5s_reset();
                 g_adc_debug_send_flag = 1;
 
-                // if (1 == g_adc_debug_send_flag)
-                // {
-                //     g_adc_debug_send_flag = 0;
-                // }
-                // else
-                // {
-                //     g_adc_debug_send_flag = 1;
-                // }
             }
             IRLED_delay(50);
 
@@ -664,6 +904,7 @@ void IR_single_key_scan_b(uint8_t switchflag)
 
     //difference between two number
     uint16_t _adc_diff = 0;
+    uint16_t _adc_d1 = 0;
     
     ir_timeflag = 0;
     
@@ -726,13 +967,17 @@ void IR_single_key_scan_b(uint8_t switchflag)
             if (g_adc_envir > g_adc_envir_reflec)
             {
                 _adc_diff = g_adc_envir - g_adc_envir_reflec;
+                _adc_d1 = ir_adc_dif_get_d1value(current_ir_scan);
+
+
                 // difference is 0.3v means key was released
                 // 1024/3.3 = 310
                 //if (_adc_diff < 100) 
                 //if (_adc_diff < iradc_get_release_threshold(g_adc_envir))
                 //if (_adc_diff < (ir_adc_get_ref_value(current_ir_scan) - 20))
                 //if (_adc_diff < eep_get_adc_ref(current_ir_scan) - 20)
-                if (_adc_diff < ir_adc_get_release_ref_value(current_ir_scan)) 
+                //if (_adc_diff < ir_adc_get_release_ref_value(current_ir_scan)) 
+                if (_adc_diff < 0.8 * _adc_d1)
                 {
                     //release time less  than 1s
                     // clear key valid
@@ -761,6 +1006,9 @@ void IR_single_key_scan_b(uint8_t switchflag)
             //     key_exit= 1;
             // }
             
+            // save diff value
+            ir_adc_dif_setvalue(current_ir_scan, _adc_diff);
+
             ir_procflag = IR_PROC_END_DELAY_2MS;
             adc_count = 0;
             //no delay, set flag with mannel
@@ -806,7 +1054,8 @@ void IRLED_process_B(void)
         }
         else
         {
-            ir_mul_key_scan_b(ir_procflag);
+            //ir_mul_key_scan_b(ir_procflag);
+            ir_mul_key_scan_c(ir_procflag);
         }
     }
     else
@@ -829,3 +1078,4 @@ void IRLED_process_B(void)
     // ir_adc_scan_200us(ir_adc_scan200usflag);
     // ir_adc_scan_1ms(ir_adc_scan2msflag);
 }
+

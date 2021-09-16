@@ -25,7 +25,7 @@
 #define IR_ADC_CHANNEL  ADC1_CHANNEL_4
 
 // MODEFY TO RXD FOR TEMP   21.8.8
-#define IR_GDEN_PIN   GPIO_PIN_6
+#define IR_GDEN_PIN   GPIO_PIN_6 
 //pd 1 swim
 //#define IR_GDEN_PIN   GPIO_PIN_1
 
